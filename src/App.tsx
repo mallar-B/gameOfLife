@@ -20,8 +20,13 @@ function App() {
   });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawing = useRef(false);
+  const drawnCellsRef = useRef(new Set<string>());
 
-  const updteCell = (col: number,row: number) => {
+  const updteCell = (col: number, row: number) => {
+    const cellKey = `${row}-${col}`;
+    if (drawnCellsRef.current.has(cellKey)) return;
+    drawnCellsRef.current.add(cellKey);
+
     setGrid((prevGrid) => {
       const newGrid = [...prevGrid];
       const newRow = [...newGrid[row]];
@@ -56,7 +61,7 @@ function App() {
       for (let col = 0; col < cols; col++) {
         if (grid[row][col] === 1) {
           console.log("black are", row, col);
-          ctx.fillRect(col* gridSize, row* gridSize, gridSize, gridSize);
+          ctx.fillRect(col * gridSize, row * gridSize, gridSize, gridSize);
         }
       }
     }
