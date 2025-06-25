@@ -39,7 +39,6 @@ function App() {
   const draw = (event: MouseEvent) => {
     if (!isDrawing.current) return;
 
-    const ctx = canvasRef.current?.getContext("2d");
     const frame = canvasRef.current?.getBoundingClientRect();
     const x = Math.floor((event.clientX - frame!.left) / gridSize) * gridSize;
     const y = Math.floor((event.clientY - frame!.top) / gridSize) * gridSize;
@@ -57,19 +56,42 @@ function App() {
 
     ctx.clearRect(0, 0, cols * gridSize, rows * gridSize);
 
+    // Draw grid lines
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 1;
+
+    // Draw vertical lines
+    for (let x = 0; x <= frameWidth; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, frameHeight);
+      ctx.stroke();
+    }
+
+    // Draw horizontal lines
+    for (let y = 0; y <= frameHeight; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(frameWidth, y);
+      ctx.stroke();
+    }
+
+    // Draw each cell
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
+        ctx?.strokeRect(row * gridSize, col * gridSize, gridSize, gridSize);
         if (grid[row][col] === 1) {
           console.log("black are", row, col);
           ctx.fillRect(col * gridSize, row * gridSize, gridSize, gridSize);
         }
       }
     }
-  }, [grid]);
+  }, [grid, frameWidth, frameHeight, rows, cols]);
 
   useEffect(() => {
     setFrameWidth(window.innerWidth - 50); // compansate for padding of body
     setFrameHeight(window.innerHeight / 2);
+    const ctx = canvasRef.current?.getContext("2d");
   }, []);
 
   useEffect(() => {
@@ -110,19 +132,6 @@ function App() {
   return (
     <div className="grid-frame">
       <canvas ref={canvasRef} height={frameHeight} width={frameWidth} />
-      <button
-        onClick={() => {
-          for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-              if (grid[i][j] === 1) {
-                console.log("black are", i, j);
-              }
-            }
-          }
-        }}
-      >
-        see grid blacks
-      </button>
     </div>
   );
 }
