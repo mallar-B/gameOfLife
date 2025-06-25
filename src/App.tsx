@@ -5,11 +5,31 @@ function App() {
   const [gridSize, setGridSize] = useState<number>(20);
   const [frameWidth, setFrameWidth] = useState<number>(0);
   const [frameHeight, setFrameHeight] = useState<number>(0);
-  const [rows, setRows] = useState<number>(0);
-  const [cols, setCols] = useState<number>(0);
+  const [rows, setRows] = useState<number>(500);
+  const [cols, setCols] = useState<number>(500);
+  const [grid, setGrid] = useState<Array<Array<number>>>(() => {
+    const arr2d: Array<Array<number>> = [];
+    for (let i = 0; i < 500; i++) {
+      const row: Array<number> = [];
+      for (let j = 0; j < 500; j++) {
+        row.push(0);
+      }
+      arr2d.push(row);
+    }
+    return arr2d;
+  });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawing = useRef(false);
 
+  const updteCell = (col: number,row: number) => {
+    setGrid((prevGrid) => {
+      const newGrid = [...prevGrid];
+      const newRow = [...newGrid[row]];
+      newRow[col] = newRow[col] === 0 ? 1 : 0;
+      newGrid[row] = newRow;
+      return newGrid;
+    });
+  };
 
   const draw = (event: MouseEvent) => {
     if (!isDrawing.current) return;
@@ -18,9 +38,29 @@ function App() {
     const frame = canvasRef.current?.getBoundingClientRect();
     const x = Math.floor((event.clientX - frame!.left) / gridSize) * gridSize;
     const y = Math.floor((event.clientY - frame!.top) / gridSize) * gridSize;
+    const gridX = Math.floor(x / gridSize); // col
+    const gridY = Math.floor(y / gridSize); // row
 
-    ctx?.fillRect(x, y, gridSize, gridSize);
+    updteCell(gridX, gridY);
   };
+
+  // This useEffect make sure to draw instantly
+  // This is the main drawing logic
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, cols * gridSize, rows * gridSize);
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (grid[row][col] === 1) {
+          console.log("black are", row, col);
+          ctx.fillRect(col* gridSize, row* gridSize, gridSize, gridSize);
+        }
+      }
+    }
+  }, [grid]);
 
   useEffect(() => {
     setFrameWidth(window.innerWidth - 50); // compansate for padding of body
@@ -65,6 +105,19 @@ function App() {
   return (
     <div className="grid-frame">
       <canvas ref={canvasRef} height={frameHeight} width={frameWidth} />
+      <button
+        onClick={() => {
+          for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+              if (grid[i][j] === 1) {
+                console.log("black are", i, j);
+              }
+            }
+          }
+        }}
+      >
+        see grid blacks
+      </button>
     </div>
   );
 }
