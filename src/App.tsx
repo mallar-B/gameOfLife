@@ -93,18 +93,20 @@ function App() {
     });
   };
 
-  const draw = (event: MouseEvent) => {
-    if (!isDrawing.current) return;
+  const draw = useCallback(
+    (event: MouseEvent) => {
+      if (!isDrawing.current) return;
 
-    const frame = canvasRef.current?.getBoundingClientRect();
-    const x = Math.floor((event.clientX - frame!.left) / gridSize) * gridSize;
-    const y = Math.floor((event.clientY - frame!.top) / gridSize) * gridSize;
-    const gridX = Math.floor(x / gridSize); // col
-    const gridY = Math.floor(y / gridSize); // row
+      const frame = canvasRef.current?.getBoundingClientRect();
+      const x = Math.floor((event.clientX - frame!.left) / gridSize) * gridSize;
+      const y = Math.floor((event.clientY - frame!.top) / gridSize) * gridSize;
+      const gridX = Math.floor(x / gridSize); // col
+      const gridY = Math.floor(y / gridSize); // row
 
-    updteCell(gridX, gridY);
-  };
-
+      updteCell(gridX, gridY);
+    },
+    [gridSize],
+  );
   // This useEffect make sure to draw instantly
   // This is the main drawing logic
   useEffect(() => {
@@ -142,7 +144,7 @@ function App() {
         }
       }
     }
-  }, [grid, frameWidth, frameHeight, rows, cols]);
+  }, [grid, gridSize, frameWidth, frameHeight, rows, cols]);
 
   useEffect(() => {
     if (isRunning) {
@@ -168,39 +170,29 @@ function App() {
   }, []);
 
   useEffect(() => {
-    canvasRef.current?.addEventListener(
-      "mouseleave",
-      () => (isDrawing.current = false),
-    );
-    canvasRef.current?.addEventListener(
-      "mouseup",
-      () => (isDrawing.current = false),
-    );
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    canvasRef.current?.addEventListener("mousedown", (event) => {
+    const handleMouseLeave = () => (isDrawing.current = false);
+    const handleMouseUp = () => (isDrawing.current = false);
+    const handleMouseDown = (event: MouseEvent) => {
       isDrawing.current = true;
       draw(event);
-    });
-    canvasRef.current?.addEventListener("mousemove", (event) => draw(event));
+    };
+    const handleMouseMove = (event: MouseEvent) => draw(event);
+
+    canvas.addEventListener("mouseleave", handleMouseLeave);
+    canvas.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
 
     return () => {
-      canvasRef.current?.removeEventListener(
-        "mouseleave",
-        () => (isDrawing.current = false),
-      );
-      canvasRef.current?.removeEventListener(
-        "mouseup",
-        () => (isDrawing.current = false),
-      );
-      canvasRef.current?.removeEventListener("mousedown", (event) => {
-        isDrawing.current = true;
-        draw(event);
-      });
-      canvasRef.current?.removeEventListener("mousemove", (event) =>
-        draw(event),
-      );
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
+      canvas.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      canvas.removeEventListener("mousemove", handleMouseMove);
     };
-  }, []);
+  }, [draw]);
 
   return (
     <div className="container">
@@ -220,6 +212,13 @@ function App() {
         <button onClick={() => console.log(isRunning, iterationSpeed)}>
           clear
         </button>
+        <input
+          type="range"
+          min="10"
+          max="70"
+          value={gridSize}
+          onChange={(e) => setGridSize(Number(e.target.value))}
+        />
       </div>
     </div>
   );
