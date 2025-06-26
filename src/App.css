@@ -8,8 +8,17 @@
   width: 100%;
   height: 100%;
   border: 1px solid blanchedalmond;
-  overflow: "auto";
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.button-container{
+  padding-top: 2rem;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -21,6 +21,50 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawing = useRef(false);
   const drawnCellsRef = useRef(new Set<string>());
+
+  const countNeighbours = useCallback(
+    (tempGrid: Array<Array<number>>, row: number, col: number) => {
+      let count = 0;
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          const currRow = row + i;
+          const currCol = col + j;
+          if (
+            currRow >= 0 &&
+            currRow < rows &&
+            currCol >= 0 &&
+            currCol < cols &&
+            !(i === 0 && j === 0)
+          ) {
+            count += tempGrid[currRow][currCol];
+          }
+        }
+      }
+      return count;
+    },
+    [rows, cols],
+  );
+
+  const nextIteration = useCallback(() => {
+    setGrid((prevGrid) => {
+      const newGrid = prevGrid.map((row) => [...row]); // Deep copy is important
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const neighbourCount = countNeighbours(prevGrid, row, col);
+          if (prevGrid[row][col] === 1) {
+            if (neighbourCount < 2 || neighbourCount > 3) {
+              newGrid[row][col] = 0;
+            }
+          } else {
+            if (neighbourCount === 3) {
+              newGrid[row][col] = 1;
+            }
+          }
+        }
+      }
+      return newGrid;
+    });
+  }, [countNeighbours, rows, cols]);
 
   const updteCell = (col: number, row: number) => {
     const cellKey = `${row}-${col}`;
@@ -79,7 +123,6 @@ function App() {
     // Draw each cell
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        ctx?.strokeRect(row * gridSize, col * gridSize, gridSize, gridSize);
         if (grid[row][col] === 1) {
           console.log("black are", row, col);
           ctx.fillRect(col * gridSize, row * gridSize, gridSize, gridSize);
@@ -91,7 +134,6 @@ function App() {
   useEffect(() => {
     setFrameWidth(window.innerWidth - 50); // compansate for padding of body
     setFrameHeight(window.innerHeight / 2);
-    const ctx = canvasRef.current?.getContext("2d");
   }, []);
 
   useEffect(() => {
@@ -130,8 +172,15 @@ function App() {
   }, []);
 
   return (
-    <div className="grid-frame">
-      <canvas ref={canvasRef} height={frameHeight} width={frameWidth} />
+    <div className="container">
+      <div className="grid-frame">
+        <canvas ref={canvasRef} height={frameHeight} width={frameWidth} />
+      </div>
+      <div className="button-container">
+        <button>next step</button>
+        <button>start</button>
+        <button>clear</button>
+      </div>
     </div>
   );
 }
