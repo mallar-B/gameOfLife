@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 
+const IterationCounterLabel = ({ num }: { num: number }) => {
+  return (
+    <div style={{ position: "absolute", right: 0, bottom: 0 }}>
+      Iteration:{num}
+    </div>
+  );
+};
+
 function App() {
   const [gridSize, setGridSize] = useState<number>(20);
   const [frameWidth, setFrameWidth] = useState<number>(0);
@@ -24,6 +32,7 @@ function App() {
   const runIterationRef = useRef<ReturnType<typeof setInterval>>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [iterationSpeed, setIterationSpeed] = useState<number>(425);
+  const [iterationNumber, setIterationNumber] = useState<number>(0);
 
   const countNeighbours = useCallback(
     (tempGrid: Array<Array<number>>, row: number, col: number) => {
@@ -67,6 +76,7 @@ function App() {
       }
       return newGrid;
     });
+    setIterationNumber((n) => n + 1);
   }, [countNeighbours, rows, cols]);
 
   const updteCell = (col: number, row: number) => {
@@ -196,6 +206,7 @@ function App() {
     <div className="container">
       <div className="grid-frame">
         <canvas ref={canvasRef} height={frameHeight} width={frameWidth} />
+        <IterationCounterLabel num={iterationNumber} />
       </div>
       <div className="button-container">
         <button>next step</button>
@@ -206,7 +217,9 @@ function App() {
         >
           start
         </button>
-        <button onClick={()=>console.log(isRunning,iterationSpeed)}>clear</button>
+        <button onClick={() => console.log(isRunning, iterationSpeed)}>
+          clear
+        </button>
       </div>
     </div>
   );
