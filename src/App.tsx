@@ -19,8 +19,11 @@ function App() {
     return arr2d;
   });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isDrawing = useRef(false);
-  const drawnCellsRef = useRef(new Set<string>());
+  const isDrawing = useRef<boolean>(false);
+  const drawnCellsRef = useRef<Set<string>>(new Set<string>());
+  const runIterationRef = useRef<ReturnType<typeof setInterval>>(null);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [iterationSpeed, setIterationSpeed] = useState<number>(425);
 
   const countNeighbours = useCallback(
     (tempGrid: Array<Array<number>>, row: number, col: number) => {
@@ -124,12 +127,30 @@ function App() {
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         if (grid[row][col] === 1) {
-          console.log("black are", row, col);
+          // console.log("black are", row, col);
           ctx.fillRect(col * gridSize, row * gridSize, gridSize, gridSize);
         }
       }
     }
   }, [grid, frameWidth, frameHeight, rows, cols]);
+
+  useEffect(() => {
+    if (isRunning) {
+      runIterationRef.current = setInterval(() => {
+        nextIteration();
+      }, iterationSpeed);
+    } else {
+      if (runIterationRef.current) {
+        clearInterval(runIterationRef.current);
+        runIterationRef.current = null;
+      }
+    }
+    return () => {
+      if (runIterationRef.current) {
+        clearInterval(runIterationRef.current);
+      }
+    };
+  }, [isRunning, iterationSpeed, nextIteration]);
 
   useEffect(() => {
     setFrameWidth(window.innerWidth - 50); // compansate for padding of body
@@ -178,8 +199,14 @@ function App() {
       </div>
       <div className="button-container">
         <button>next step</button>
-        <button>start</button>
-        <button>clear</button>
+        <button
+          onClick={() => {
+            setIsRunning((state) => !state);
+          }}
+        >
+          start
+        </button>
+        <button onClick={()=>console.log(isRunning,iterationSpeed)}>clear</button>
       </div>
     </div>
   );
