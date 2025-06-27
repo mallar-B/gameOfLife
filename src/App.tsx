@@ -91,8 +91,10 @@ function App() {
   const [gridSize, setGridSize] = useState<number>(20);
   const [frameWidth, setFrameWidth] = useState<number>(0);
   const [frameHeight, setFrameHeight] = useState<number>(0);
-  const [rows, setRows] = useState<number>(500);
-  const [cols, setCols] = useState<number>(500);
+  // const [rows, setRows] = useState<number>(500);
+  // const [cols, setCols] = useState<number>(500);
+  const rows = 500;
+  const cols = 500;
   const [grid, setGrid] = useState<Array<Array<number>>>(() => {
     const arr2d: Array<Array<number>> = [];
     for (let i = 0; i < 500; i++) {
