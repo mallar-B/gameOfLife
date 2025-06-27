@@ -7,7 +7,7 @@ const IterationCounterLabel = ({ num }: { num: number }) => {
       style={{
         position: "absolute",
         right: 10,
-        bottom: 0,
+        bottom: 5,
         backgroundColor: "#EDE0D4AA",
         backdropFilter: "blur(10px)",
         color: "#7D6E64",
@@ -292,6 +292,20 @@ function App() {
 
   return (
     <div className="container">
+      <header style={{ textAlign: "center", margin: "1px" }}>
+        <h1 style={{ margin: "2px" }}>Conway's Game of Life</h1>
+        <p
+          style={{
+            fontStyle: "italic",
+            fontSize: "0.9rem",
+            color: "#555",
+            margin: "5px",
+            paddingBottom: "20px",
+          }}
+        >
+          A zero-player game that evolves from your input
+        </p>
+      </header>
       <div className="grid-frame">
         <canvas
           ref={canvasRef}
@@ -337,6 +351,27 @@ function App() {
           </div>
         </div>
       </div>
+      <footer
+        style={{
+          // position: "absolute",
+          bottom: 0,
+          textAlign: "center",
+          marginTop: "1rem",
+          fontSize: "0.9rem",
+          color: "#777",
+        }}
+      >
+        <p>
+          Built by Mallar Bhattacharya with React & Typescript.{" "}
+          <a
+            href="https://github.com/mallar-B/gameOfLife"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
