@@ -3,8 +3,86 @@ import "./App.css";
 
 const IterationCounterLabel = ({ num }: { num: number }) => {
   return (
-    <div style={{ position: "absolute", right: 0, bottom: 0 }}>
+    <div
+      style={{
+        position: "absolute",
+        right: 10,
+        bottom: 0,
+        backgroundColor: "#EDE0D4AA",
+        backdropFilter: "blur(10px)",
+        color: "#7D6E64",
+      }}
+    >
       Iteration:{num}
+    </div>
+  );
+};
+
+const Button = ({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+}) => {
+  return (
+    <button className="btn" onClick={onClick}>
+      {children}
+    </button>
+  );
+};
+
+const Slider = ({
+  label,
+  value,
+  min,
+  max,
+  step,
+  setValue,
+  reverse,
+  unit,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  setValue: (value: number) => void;
+  reverse?: boolean;
+  unit?: string;
+}) => {
+  return (
+    <div className="slider-wrapper">
+      <label
+        style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}
+      >
+        {label}
+      </label>
+      <input
+        type="range"
+        value={reverse ? max + min - value : value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => {
+          const newValue = Number(e.target.value);
+          setValue(reverse ? max + min - newValue : newValue);
+        }}
+        style={{
+          width: "100%",
+          appearance: "none",
+          height: "6px",
+          borderRadius: "3px",
+          background: "#ccc",
+          outline: "none",
+          marginBottom: "10px",
+          cursor: "pointer",
+        }}
+      />
+      <span style={{ fontSize: "14px", color: "#555" }}>
+        {value}
+        {unit}
+      </span>
     </div>
   );
 };
@@ -33,6 +111,7 @@ function App() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [iterationSpeed, setIterationSpeed] = useState<number>(425);
   const [iterationNumber, setIterationNumber] = useState<number>(0);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
   const countNeighbours = useCallback(
     (tempGrid: Array<Array<number>>, row: number, col: number) => {
@@ -107,6 +186,22 @@ function App() {
     },
     [gridSize],
   );
+
+  const resetGrid = () => {
+    setGrid(() => {
+      const arr2d: Array<Array<number>> = [];
+      for (let i = 0; i < rows; i++) {
+        const row: Array<number> = [];
+        for (let j = 0; j < cols; j++) {
+          row.push(0);
+        }
+        arr2d.push(row);
+      }
+      return arr2d;
+    });
+    setIterationNumber(0);
+  };
+
   // This useEffect make sure to draw instantly
   // This is the main drawing logic
   useEffect(() => {
@@ -114,9 +209,10 @@ function App() {
     if (!ctx) return;
 
     ctx.clearRect(0, 0, cols * gridSize, rows * gridSize);
+    ctx.fillStyle = "#7F5539";
 
     // Draw grid lines
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = "#7F5539";
     ctx.lineWidth = 1;
 
     // Draw vertical lines
@@ -166,7 +262,7 @@ function App() {
 
   useEffect(() => {
     setFrameWidth(window.innerWidth - 50); // compansate for padding of body
-    setFrameHeight(window.innerHeight / 2);
+    setFrameHeight(window.innerHeight / 1.5);
   }, []);
 
   useEffect(() => {
@@ -197,28 +293,49 @@ function App() {
   return (
     <div className="container">
       <div className="grid-frame">
-        <canvas ref={canvasRef} height={frameHeight} width={frameWidth} />
+        <canvas
+          ref={canvasRef}
+          height={frameHeight}
+          width={frameWidth}
+          style={{ border: "1px solid black", backgroundColor: "#EDE0D4" }}
+        />
         <IterationCounterLabel num={iterationNumber} />
       </div>
-      <div className="button-container">
-        <button>next step</button>
-        <button
-          onClick={() => {
-            setIsRunning((state) => !state);
-          }}
-        >
-          start
-        </button>
-        <button onClick={() => console.log(isRunning, iterationSpeed)}>
-          clear
-        </button>
-        <input
-          type="range"
-          min="10"
-          max="70"
-          value={gridSize}
-          onChange={(e) => setGridSize(Number(e.target.value))}
-        />
+      <div className="hud">
+        <div className="button-container">
+          <Button onClick={nextIteration}>Next Iteration</Button>
+          <Button onClick={() => setIsRunning((state) => !state)}>
+            {isRunning ? "stop" : "start"}
+          </Button>
+          <Button onClick={resetGrid}>clear</Button>
+          <div className="settings-wrapper">
+            <Button onClick={() => setIsSettingsOpen((state) => !state)}>
+              Settings
+            </Button>
+            {isSettingsOpen ? (
+              <div className="sliders-container">
+                <Slider
+                  label="Grid Size"
+                  value={gridSize}
+                  min={5}
+                  max={70}
+                  step={1}
+                  setValue={setGridSize}
+                />
+                <Slider
+                  label="Iteration Speed"
+                  value={iterationSpeed}
+                  min={50}
+                  max={1000}
+                  step={10}
+                  setValue={setIterationSpeed}
+                  reverse={true}
+                  unit="ms"
+                />
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );
