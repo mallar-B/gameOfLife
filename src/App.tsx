@@ -272,21 +272,25 @@ function App() {
     const handleMouseLeave = () => (isDrawing.current = false);
     const handleMouseUp = () => (isDrawing.current = false);
     const handleMouseDown = (event: MouseEvent) => {
+      event.preventDefault();
       isDrawing.current = true;
       draw(event);
     };
-    const handleMouseMove = (event: MouseEvent) => draw(event);
+    const handleMouseMove = (event: MouseEvent) => {
+      event.preventDefault();
+      draw(event);
+    };
 
-    canvas.addEventListener("mouseleave", handleMouseLeave);
-    canvas.addEventListener("mouseup", handleMouseUp);
-    canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("pointerleave", handleMouseLeave);
+    canvas.addEventListener("pointerup", handleMouseUp);
+    canvas.addEventListener("pointerdown", handleMouseDown);
+    canvas.addEventListener("pointermove", handleMouseMove);
 
     return () => {
-      canvas.removeEventListener("mouseleave", handleMouseLeave);
-      canvas.removeEventListener("mouseup", handleMouseUp);
-      canvas.removeEventListener("mousedown", handleMouseDown);
-      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("pointerleave", handleMouseLeave);
+      canvas.removeEventListener("pointerup", handleMouseUp);
+      canvas.removeEventListener("pointerdown", handleMouseDown);
+      canvas.removeEventListener("pointermove", handleMouseMove);
     };
   }, [draw]);
 
@@ -311,7 +315,11 @@ function App() {
           ref={canvasRef}
           height={frameHeight}
           width={frameWidth}
-          style={{ border: "1px solid black", backgroundColor: "#EDE0D4" }}
+          style={{
+            border: "1px solid black",
+            backgroundColor: "#EDE0D4",
+            touchAction: "none",
+          }}
         />
         <IterationCounterLabel num={iterationNumber} />
       </div>
